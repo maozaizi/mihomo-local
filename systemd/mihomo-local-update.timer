@@ -1,0 +1,11 @@
+[Unit]
+Description=Hourly Mihomo subscription update
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=5m
+Persistent=true
+Unit=mihomo-local-update.service
+
+[Install]
+WantedBy=timers.target

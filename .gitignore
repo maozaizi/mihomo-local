@@ -1,0 +1,24 @@
+# Credentials, runtime configuration and local machine data
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+config.yaml
+subscriptions/
+state/
+*.log
+*.db
+*.db-*
+*.bak
+*.backup
+*.tgz
+*.tar.gz
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+/dist/
+/outputs/
+/audit-private/

@@ -1,0 +1,29 @@
+[Unit]
+Description=Mihomo local application proxy
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+User=mihomo-local
+Group=mihomo-local
+WorkingDirectory=/var/lib/mihomo-local/core
+ExecStartPre=/usr/local/bin/mihomo-local guard
+ExecStart=/usr/local/bin/mihomo -d /var/lib/mihomo-local/core -f /etc/mihomo-local/config.yaml
+Restart=on-failure
+RestartSec=5
+UMask=0027
+NoNewPrivileges=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateDevices=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/mihomo-local/core/cache.db
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

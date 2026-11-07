@@ -1,0 +1,7 @@
+lan|4f283cc1838e4285479506c702816d363184ba43fbfa425ff72b4e0986e8af5e|yaml|classical|acl4ssr-lan.yaml|https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/575637df38884575bfa523e95c17d0ee3be1676c/Clash/Providers/LocalAreaNetwork.yaml
+cn-domain|1c37f48790d6ff3427aa5176e06607ceab51cb8dd740c9ac8ca8d01039180260|yaml|classical|acl4ssr-cn-domain.yaml|https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/575637df38884575bfa523e95c17d0ee3be1676c/Clash/Providers/ChinaDomain.yaml
+cn-ipv4|0ba5c7979119ddd5438250c99dda0a531c63c022a2791b26844d4f201a62b1df|yaml|ipcidr|acl4ssr-cn-ipv4.yaml|https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/575637df38884575bfa523e95c17d0ee3be1676c/Clash/Providers/ChinaIp.yaml
+cn-ip|794f27a804c7c8272b2b9c6322aa04da34291611fd3b48bc4b761bf43b35da9a|mrs|ipcidr|cn-ip.mrs|https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/1852a7d214920d77c753293c49eb26a996e52081/geo/geoip/cn.mrs
+ai-foreign|258e799c782ff968a7e9975f92e32f577a8be2a0764ea1aafb18fb667a0fdc78|mrs|domain|ai-foreign.mrs|https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/1852a7d214920d77c753293c49eb26a996e52081/geo/geosite/category-ai-!cn.mrs
+tiktok|c6c2a01e6fa45f8086242ee2e197e75de3450080132e5bdf198624aced71fcd9|mrs|domain|tiktok.mrs|https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/1852a7d214920d77c753293c49eb26a996e52081/geo/geosite/tiktok.mrs
+webui|4f16cce229e223bd07b5a3daccfbfb8bf349d7335572d412959284ab6c9bab50|zip|ui|webui.zip|https://github.com/Zephyruso/zashboard/releases/download/v3.29.1/dist.zip

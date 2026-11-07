@@ -1,0 +1,43 @@
+#!/bin/sh
+# Executable half: never pretends it can change the parent shell.
+set -eu
+state_dir=${XDG_STATE_HOME:-"$HOME/.local/state"}/mihomo-proxy
+case "${1:-status}" in
+    on|off)
+        echo '请先在当前 Bash/Zsh 执行：source /etc/profile.d/mihomo-proxy.sh，再运行本命令。' >&2
+        exit 2;;
+    check)
+        # Explicitly override any inherited bypass/proxy variables.
+        code=$(curl --noproxy '' --proxy http://127.0.0.1:7890 -sS -o /dev/null \
+            --connect-timeout 5 --max-time 15 -w '%{http_code}' https://cp.cloudflare.com 2>/dev/null) || {
+            echo '代理实际请求失败；请检查订阅、当前节点与日志。' >&2; exit 1;
+        }
+        [ "$code" = 204 ] || { echo '代理检测未返回预期 HTTP 204。' >&2; exit 1; };;
+    persist)
+        case "${2:-}" in on|off) ;; *) exit 2;; esac
+        umask 077
+        mkdir -p "$state_dir"; chmod 700 "$state_dir"
+        temp=$(mktemp "$state_dir/.state.XXXXXX")
+        trap 'rm -f "$temp"' EXIT HUP INT TERM
+        printf '%s\n' "$2" > "$temp"
+        mv -f "$temp" "$state_dir/state";;
+    status)
+        state=off
+        [ ! -f "$state_dir/state" ] || state=$(cat "$state_dir/state")
+        case "$state" in on|off) ;; *) state=invalid;; esac
+        printf '当前用户保存的代理状态：%s\n' "$state"
+        printf 'Mihomo 服务：'; systemctl is-active mihomo-local.service || true
+        if "$0" check; then echo '实际代理请求：通过'; else echo '实际代理请求：失败'; exit 1; fi;;
+    log)
+        if [ "$(id -u)" != 0 ]; then
+            case "$#:${2:-}" in
+                1:) exec sudo journalctl -u mihomo-local.service -n 100 --no-pager;;
+                2:--follow) exec sudo journalctl -u mihomo-local.service -n 50 -f;;
+                *) echo '用法：mihomo-proxy log [--follow]' >&2; exit 2;;
+            esac
+        fi
+        case "$#:${2:-}" in 1:) exec journalctl -u mihomo-local.service -n 100 --no-pager;;
+            2:--follow) exec journalctl -u mihomo-local.service -n 50 -f;;
+            *) echo '用法：mihomo-proxy log [--follow]' >&2; exit 2;; esac;;
+    *) echo '用法：mihomo-proxy on|off|status|log [--follow]' >&2; exit 2;;
+esac

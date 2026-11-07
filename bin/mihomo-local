@@ -1,0 +1,34 @@
+#!/bin/sh
+set -eu
+. "${MIHOMO_LOCAL_LIB:-/usr/local/lib/mihomo-local/current}/lib/common.sh"
+cmd=${1:-help}; [ "$#" -eq 0 ] || shift
+case "$cmd" in
+    sub) exec "$NL_LIB/subscriptions.sh" "$@";;
+    update|rollback) exec "$NL_LIB/subscriptions.sh" "$cmd" "$@";;
+    init|doctor|schedule) exec "$NL_LIB/service.sh" "$cmd" "$@";;
+    guard) nl_assert_config;;
+    status)
+        echo "mihomo-local $NL_VERSION"
+        "$NL_LIB/subscriptions.sh" list
+        if [ -z "$R" ]; then systemctl is-active mihomo-local.service; systemctl is-enabled mihomo-local-update.timer; fi
+        ;;
+    logs) [ ! -f "$NL_LOG" ] || tail -n 100 "$NL_LOG";;
+    version|--version) echo "mihomo-local $NL_VERSION";;
+    help|--help|-h)
+        cat <<'HELP'
+mihomo-local 1.0.1 — Linux 服务器订阅节点管理
+  init                           创建配置、启动服务与每小时更新
+  sub add 'HTTPS地址或/本地文件' [--name 名称]
+  sub list                       查看订阅，隐藏地址
+  sub remove s0001               删除指定订阅及其节点
+  sub set-url s0001 '新地址'      校验成功后更换来源
+  sub recover                    恢复中断操作
+  update [--force]               更新全部订阅，失败来源保留旧节点
+  rollback                       恢复上一版订阅清单与节点
+  schedule hourly|off            开关定时更新
+  status | doctor | logs | version
+终端代理：mihomo-proxy on|off|status|log
+HELP
+        ;;
+    *) nl_fail '未知命令，请执行 mihomo-local help。';;
+esac

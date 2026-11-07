@@ -1,0 +1,16 @@
+[Unit]
+Description=Update all Mihomo local subscriptions
+After=network-online.target mihomo-local.service
+Requires=mihomo-local.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/mihomo-local update
+SuccessExitStatus=2
+TimeoutStartSec=2h
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/mihomo-local

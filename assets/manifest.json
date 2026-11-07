@@ -1,0 +1,71 @@
+{
+  "snapshot_date": "2026-10-18",
+  "acl_commit": "575637df38884575bfa523e95c17d0ee3be1676c",
+  "meta_commit": "1852a7d214920d77c753293c49eb26a996e52081",
+  "webui_tag": "v3.29.1",
+  "resources": [
+    {
+      "id": "lan",
+      "format": "yaml",
+      "behavior": "classical",
+      "file": "acl4ssr-lan.yaml",
+      "url": "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/575637df38884575bfa523e95c17d0ee3be1676c/Clash/Providers/LocalAreaNetwork.yaml",
+      "sha256": "4f283cc1838e4285479506c702816d363184ba43fbfa425ff72b4e0986e8af5e",
+      "bytes": 1383
+    },
+    {
+      "id": "cn-domain",
+      "format": "yaml",
+      "behavior": "classical",
+      "file": "acl4ssr-cn-domain.yaml",
+      "url": "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/575637df38884575bfa523e95c17d0ee3be1676c/Clash/Providers/ChinaDomain.yaml",
+      "sha256": "1c37f48790d6ff3427aa5176e06607ceab51cb8dd740c9ac8ca8d01039180260",
+      "bytes": 19899
+    },
+    {
+      "id": "cn-ipv4",
+      "format": "yaml",
+      "behavior": "ipcidr",
+      "file": "acl4ssr-cn-ipv4.yaml",
+      "url": "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/575637df38884575bfa523e95c17d0ee3be1676c/Clash/Providers/ChinaIp.yaml",
+      "sha256": "0ba5c7979119ddd5438250c99dda0a531c63c022a2791b26844d4f201a62b1df",
+      "bytes": 162682
+    },
+    {
+      "id": "cn-ip",
+      "format": "mrs",
+      "behavior": "ipcidr",
+      "file": "cn-ip.mrs",
+      "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/1852a7d214920d77c753293c49eb26a996e52081/geo/geoip/cn.mrs",
+      "sha256": "794f27a804c7c8272b2b9c6322aa04da34291611fd3b48bc4b761bf43b35da9a",
+      "bytes": 38566
+    },
+    {
+      "id": "ai-foreign",
+      "format": "mrs",
+      "behavior": "domain",
+      "file": "ai-foreign.mrs",
+      "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/1852a7d214920d77c753293c49eb26a996e52081/geo/geosite/category-ai-!cn.mrs",
+      "sha256": "258e799c782ff968a7e9975f92e32f577a8be2a0764ea1aafb18fb667a0fdc78",
+      "bytes": 2071
+    },
+    {
+      "id": "tiktok",
+      "format": "mrs",
+      "behavior": "domain",
+      "file": "tiktok.mrs",
+      "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/1852a7d214920d77c753293c49eb26a996e52081/geo/geosite/tiktok.mrs",
+      "sha256": "c6c2a01e6fa45f8086242ee2e197e75de3450080132e5bdf198624aced71fcd9",
+      "bytes": 522
+    },
+    {
+      "id": "webui",
+      "format": "zip",
+      "behavior": "ui",
+      "file": "webui.zip",
+      "url": "https://github.com/Zephyruso/zashboard/releases/download/v3.29.1/dist.zip",
+      "sha256": "4f16cce229e223bd07b5a3daccfbfb8bf349d7335572d412959284ab6c9bab50",
+      "bytes": 9570334
+    }
+  ]
+}
