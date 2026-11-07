@@ -1,4 +1,4 @@
-# mihomo-local 1.0.1
+# mihomo-local 1.1.0
 
 面向 Debian/Ubuntu Linux 服务器的轻量订阅管理工具。应用主动使用本机 HTTP/SOCKS 代理，Mihomo 按规则分流。独立于 Nikki/OpenWrt；现有 nikki-local 不受影响。
 
@@ -11,29 +11,51 @@
 - systemd 服务、Docker 容器和已经运行的程序需要单独配置代理；不自动修改其他服务。
 - 当前版本面向全新部署，安装器拒绝覆盖已有内核、同名账号、文件和服务。尚不提供原地升级或卸载命令。
 
-## 新服务器安装
+## 新服务器离线安装
 
-支持 Debian/Ubuntu、systemd、amd64/arm64。将完整发布包上传服务器、解压后：
+支持 **Debian 12/13、Ubuntu 24.04**，真实运行的 systemd，amd64/arm64。默认安装器不联网、不执行 apt、不下载内核或数据库。
+
+### 在能联网的电脑上准备
+
+到 [Release](https://github.com/maozaizi/mihomo-local/releases/tag/v1.1.0) 下载与服务器架构匹配的完整包：
+
+- `mihomo-local-v1.1.0-linux-amd64.tar.gz`（x86_64）
+- `mihomo-local-v1.1.0-linux-arm64.tar.gz`（aarch64/arm64）
+- `mihomo-local-v1.1.0-checksums.txt`
+
+完整包包含 **Mihomo 1.19.33 稳定内核、yq 4.54.2、全部规则和 WebUI**，还附上游许可证、来源/摘要和对应源码。amd64 使用官方 v1 构建以兼容较老 CPU；不会在安装时临时选择新内核。
+
+Mac 可用 `shasum -a 256 文件名` 对照校验清单，再通过 SFTP/SCP 上传服务器。Linux 上可执行 `sha256sum --check --ignore-missing mihomo-local-v1.1.0-checksums.txt`。系统依赖由镜像或管理员预先准备，见 [DEPENDENCIES.md](DEPENDENCIES.md)；完整包不混装其他发行版的 deb 包。
+
+### 在服务器上检查，然后安装
+
+以 amd64 包为例：
 
 ```sh
+tar -xzf mihomo-local-v1.1.0-linux-amd64.tar.gz
+cd mihomo-local-v1.1.0
+sudo sh install.sh --check
 sudo sh install.sh
+```
+
+`--check` 检查系统依赖/证书、完整文件摘要、Linux ELF 架构、稳定内核、端口冲突、规则/WebUI，以及完整配置的内核校验；只使用私有临时目录，不创建用户、安装文件或注册服务。缺内核、缺依赖、错误架构或规则缺失时明确停止。检查通过后，去掉 `--check` 才执行安装。
+
+安装后服务会启动，订阅默认每小时更新，但**没有节点不代表代理可用**。若服务器能访问订阅：
+
+```sh
 sudo mihomo-local sub add 'https://你的订阅地址' --name '主订阅'
+```
+
+若第一个订阅也不通，先在联网电脑准备节点 YAML，单独私密上传并限制权限，然后导入：
+
+```sh
+sudo mihomo-local sub add '/绝对路径/bootstrap.yaml' --name '引导节点'
 source /etc/profile.d/mihomo-proxy.sh
 mihomo-proxy on
 mihomo-proxy status
 ```
 
-安装器补齐 curl、CA 证书、jq（仅安装阶段）、unzip、util-linux/flock、coreutils/timeout、iproute2；从官方最新非预发布 Release 下载 Mihomo 和 Mike Farah yq v4，核对 GitHub 资产 SHA256 后安装。上游缺少资产摘要时停止，不跳过校验。首次安装需要访问软件源和 GitHub；若访问不通，可以预先准备 Linux 可执行文件和从可信渠道核对的摘要：
-
-```sh
-sudo sh install.sh \
-  --mihomo /绝对路径/mihomo --mihomo-sha256 '64位SHA256' \
-  --yq /绝对路径/yq --yq-sha256 '64位SHA256'
-```
-
-这条方式跳过两项 GitHub 下载；系统依赖仍需已经安装，或可用的软件源；依赖齐全时不访问软件源。规则和 WebUI 随包提供，不依赖首次访问 GitHub。内核不随日常订阅更新自动升级。
-
-安装完成时启动空节点服务（空组拒绝转发），并启用每小时更新。添加有效订阅、选好节点后开启终端代理。没有有效节点时不要把“服务在运行”当成“代理可用”。
+建立代理后再添加正式订阅。程序直连下载失败会通过本地代理重试，定时任务也采用同样流程。正式订阅可用后可以删除引导来源。本地 YAML 后续更新会重读原路径，不要删除仍在使用的源文件；引导凭据绝不放入公开安装包。
 
 Bash 登录终端通过 `/etc/profile.d` 加载。Zsh 用户在 `~/.zshrc` 手动加入一行：
 
@@ -41,7 +63,19 @@ Bash 登录终端通过 `/etc/profile.d` 加载。Zsh 用户在 `~/.zshrc` 手�
 source /etc/profile.d/mihomo-proxy.sh
 ```
 
-Bash 非登录交互终端如未读取系统 profile，也可在自己的 `~/.bashrc` 加入同一行。安装器不会改写任何用户的 dotfiles。
+Bash 非登录交互终端如未读取系统 profile，也可在自己的 `~/.bashrc` 加入同一行。安装器不会改写用户 dotfiles。
+
+### 使用源码包或自备内核
+
+Git clone、GitHub 自动生成的 Source code 和本项目 `-source` 包均不含内核。请在联网电脑准备 Linux 对应架构的内核和 yq，并核对可信来源的摘要：
+
+```sh
+sudo sh install.sh --check \
+  --mihomo /绝对路径/mihomo --mihomo-sha256 '64位可信SHA256' \
+  --yq /绝对路径/yq --yq-sha256 '64位可信SHA256'
+```
+
+检查通过后去掉 `--check` 安装。文件必须是普通 Linux ELF64 可执行文件，不能是 macOS 程序或符号链接。未准备好会停止，不尝试联网下载。
 
 ## 日常使用
 
@@ -109,6 +143,6 @@ ssh -L 9090:127.0.0.1:9090 用户@服务器
 
 ## 开发与测试
 
-见 `ARCHITECTURE.md`、`VALIDATION.md`。`tools/package.py` 生成 SHA256SUMS、ZIP 与 tar.gz。摘要用于完整性核对，不替代发布来源可信性验证。
+见 `ARCHITECTURE.md`、`VALIDATION.md`。在联网准备机运行 `python3 tools/prepare-offline.py --arch arm64 --output-dir /临时目录/vendor-arm64`，再运行 `python3 tools/package.py --vendor-dir /临时目录/vendor-arm64 --output-dir dist`；amd64 同理。`tools/package.py` 不接收 vendor 时仅生成源码包。它会生成 SHA256SUMS、ZIP 与 tar.gz。摘要用于完整性核对，不替代发布来源可信性验证。
 
-协议解析和订阅事务移植自同工作区 nikki-local 4.1.0；第三方规则与 WebUI 的许可证及来源保留于 assets。本项目原创代码采用 [MIT](LICENSE) 许可证；第三方资源继续遵循各自许可证，见 [来源与许可说明](assets/UPSTREAM-NOTICES.md)。
+协议解析和订阅事务移植自同工作区 nikki-local 4.1.0；第三方规则与 WebUI 的许可证及来源保留于 assets。本项目原创代码采用 [MIT](LICENSE) 许可证；第三方规则、WebUI 以及完整包中的 Mihomo/yq 保留各自许可证，见 [来源与许可说明](assets/UPSTREAM-NOTICES.md) 和完整包的 `vendor/SOURCES.md`。

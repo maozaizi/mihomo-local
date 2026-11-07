@@ -31,3 +31,7 @@ Zashboard is an unmodified MIT-licensed v3.29.1 build; its source is available a
 [the v3.29.1 tag](https://github.com/Zephyruso/zashboard/tree/v3.29.1), and its
 bundled third-party notices remain inside `webui.zip`.
 The project's MIT license applies to original code, not to these resources.
+
+Architecture-specific offline releases additionally carry upstream Mihomo and yq
+binaries, licenses, exact source archives and provenance in vendor/. See
+vendor/SOURCES.md in the complete release; these files keep their own licenses.

@@ -2,6 +2,7 @@
 set -eu
 . "${MIHOMO_LOCAL_LIB:-/usr/local/lib/mihomo-local/current}/lib/common.sh"
 . "$NL_LIB/core.sh"
+. "$NL_LIB/resources.sh"
 nl_need_admin
 cmd=${1:-}; shift
 case "$cmd" in
@@ -37,19 +38,7 @@ init)
         ML_SECRET="$secret" yq e '.secret = strenv(ML_SECRET)' "$NL_PKG/template.yaml" > "$work/config.yaml"
         nl_placeholder "$NL_SUB_EMPTY" "$work/subscriptions.yaml"
         nl_put "$work/subscriptions.yaml" "$NL_SUB_TARGET"
-        # All public assets are already covered by the package integrity manifest.
-        while IFS='|' read -r ident digest format behavior filename url; do
-            case "$filename" in ''|*/*|*..*) nl_fail '资源文件名无效。';; esac
-            actual=$(sha256sum "$NL_PKG/assets/$filename"); actual=${actual%% *}
-            [ "$actual" = "$digest" ] || nl_fail "资源校验失败：$ident"
-            if [ "$format" = zip ]; then
-                unzip -q "$NL_PKG/assets/$filename" -d "$work/webui"
-                [ -s "$work/webui/dist/index.html" ] || nl_fail 'WebUI 缺少入口。'
-                [ -e "$NL_RUN_DIR/ui" ] || cp -R "$work/webui/dist" "$NL_RUN_DIR/ui"
-            else
-                cp "$NL_PKG/assets/$filename" "$NL_RUN_DIR/rule-providers/$filename"
-            fi
-        done < "$NL_PKG/assets/manifest.tsv"
+        resources_prepare "$NL_PKG" "$NL_RUN_DIR" "$work/resources"
         nl_put "$work/config.yaml" "$NL_RUN"
         nl_assert_config
         timeout 120 mihomo -t -d "$NL_RUN_DIR" -f "$NL_RUN" > "$work/check.log" 2>&1 || {

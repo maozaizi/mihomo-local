@@ -16,7 +16,7 @@ case "$cmd" in
     version|--version) echo "mihomo-local $NL_VERSION";;
     help|--help|-h)
         cat <<'HELP'
-mihomo-local 1.0.1 — Linux 服务器订阅节点管理
+mihomo-local 1.1.0 — Linux 服务器订阅节点管理
   init                           创建配置、启动服务与每小时更新
   sub add 'HTTPS地址或/本地文件' [--name 名称]
   sub list                       查看订阅，隐藏地址

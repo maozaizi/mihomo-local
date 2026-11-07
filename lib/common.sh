@@ -3,7 +3,7 @@
 R=${MLOCAL_ROOT:-}
 export PATH=${MLOCAL_PATH:-/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}
 umask 077
-NL_VERSION=1.0.1
+NL_VERSION=1.1.0
 NL_PKG=${MIHOMO_LOCAL_LIB:-/usr/local/lib/mihomo-local/current}
 NL_LIB=$NL_PKG/lib
 NL_HOME=$R/var/lib/mihomo-local/state

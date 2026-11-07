@@ -8,13 +8,16 @@ including exploit details, subscriptions, node credentials, logs or private keys
 This project manages credentials on the installed machine. Do not commit
 `/etc/mihomo-local/config.yaml`, `/var/lib/mihomo-local/state`, providers,
 Shell environment dumps, or operational logs. The repository includes only
-synthetic test fixtures and public upstream rule/WebUI assets.
+synthetic test fixtures and public upstream rule/WebUI assets. Offline release
+packages additionally include unmodified upstream binary/source archives with
+their licenses and provenance; public upstream test fixtures are not user secrets.
 
 - Proxy and controller listen on loopback only. Never expose them publicly.
 - The controller key is independently generated during initialization.
 - Subscription updates do not accept remote routing/DNS/listener configuration.
-- Downloads require HTTPS and certificate validation; release binaries are
-  verified against GitHub asset digests. The self-contained checksum manifest
+- Downloads require HTTPS and certificate validation; complete-package binaries
+  are verified against pinned GitHub asset digests on the preparation machine.
+  The installer only accepts local verified binaries. The self-contained checksum manifest
   detects corruption, not a malicious replacement of both files and manifest.
 - The core uses an unprivileged service UID with no network-management capabilities.
 - The core may write only its selection cache. Config, provider and rule parents

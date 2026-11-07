@@ -6,7 +6,8 @@ set -eu
 mkdir -p /run/systemd/system /usr/local/bin /usr/local/sbin
 cat > /usr/local/sbin/apt-get <<'EOF'
 #!/bin/sh
-exit 0
+echo apt-called >> /tmp/network-violation
+exit 99
 EOF
 cat > /usr/local/bin/systemctl <<'EOF'
 #!/bin/sh
@@ -40,17 +41,27 @@ mkdir -p "$candidate/.git"
 printf 'DEMO_EXCLUDED_GIT_METADATA\n' > "$candidate/.git/config"
 core_sha=$(sha256sum /tools/mihomo);core_sha=${core_sha%% *}
 yq_sha=$(sha256sum /tools/yq);yq_sha=${yq_sha%% *}
+install_checked() {
+    if [ -s "$candidate/vendor/bin/mihomo" ] && [ -s "$candidate/vendor/bin/yq" ]; then
+        sh "$candidate/install.sh" "$@"
+    else
+        sh "$candidate/install.sh" --mihomo /tools/mihomo --mihomo-sha256 "$core_sha" --yq /tools/yq --yq-sha256 "$yq_sha" "$@"
+    fi
+}
 # Record host-network state in this container, not just source-level assurances.
 sha256sum /etc/resolv.conf > /tmp/dns-before
 ip -j address > /tmp/address-before
 ip -j route > /tmp/route-before
+install_checked --check
+[ ! -e /etc/mihomo-local ] && [ ! -e /usr/local/bin/mihomo ]
+! getent passwd mihomo-local >/dev/null
 # Failed startup must remove product-owned files and user; it must be retryable.
 touch /tmp/fail-service
-if sh "$candidate/install.sh" --mihomo /tools/mihomo --mihomo-sha256 "$core_sha" --yq /tools/yq --yq-sha256 "$yq_sha"; then exit 10; fi
+if install_checked; then exit 10; fi
 [ ! -e /etc/mihomo-local ] && [ ! -e /usr/local/bin/mihomo ] && [ ! -e /usr/local/lib/mihomo-local ]
 ! getent passwd mihomo-local >/dev/null
 rm -f /tmp/fail-service
-sh "$candidate/install.sh" --mihomo /tools/mihomo --mihomo-sha256 "$core_sha" --yq /tools/yq --yq-sha256 "$yq_sha"
+install_checked
 /usr/local/bin/mihomo-local doctor
 [ ! -e /usr/local/lib/mihomo-local/current/.env ]
 [ ! -e /usr/local/lib/mihomo-local/current/.git ]
@@ -72,7 +83,7 @@ EOF
 /usr/local/bin/mihomo-local doctor
 sha256sum --check --status /tmp/config-before
 # Refuse to overwrite an installed deployment.
-if sh "$candidate/install.sh" --mihomo /tools/mihomo --mihomo-sha256 "$core_sha" --yq /tools/yq --yq-sha256 "$yq_sha"; then exit 12; fi
+if install_checked; then exit 12; fi
 systemd-analyze verify /etc/systemd/system/mihomo-local.service /etc/systemd/system/mihomo-local-update.service /etc/systemd/system/mihomo-local-update.timer
 sha256sum --check --status /tmp/dns-before
 ip -j address > /tmp/address-after
@@ -86,5 +97,6 @@ uid=pwd.getpwnam('mihomo-local').pw_uid
 assert any(p.name.isdigit() and p.stat().st_uid==uid and (p/'comm').exists() and (p/'comm').read_text().strip()=='mihomo' for p in pathlib.Path('/proc').iterdir())
 PYTEST
 [ "$(yq 'has("tun")' /etc/mihomo-local/config.yaml)" = false ]
-echo 'PASS: fresh install, failed-start rollback/retry, service UID, permissions, subscription publish, idempotent init, overwrite refusal, unit syntax, unchanged routes/interfaces/resolv.conf'
+[ ! -e /tmp/network-violation ]
+echo 'PASS: offline precheck, fresh install, failed-start rollback/retry, service UID, permissions, subscription publish, idempotent init, overwrite refusal, unit syntax, unchanged routes/interfaces/resolv.conf'
 systemctl disable --now mihomo-local.service
